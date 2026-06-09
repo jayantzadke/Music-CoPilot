@@ -6,6 +6,8 @@ const nextConfig = {
       { protocol: 'https', hostname: 'c.saavncdn.com' },
       { protocol: 'https', hostname: 'saavn.sumit.co' },
       { protocol: 'https', hostname: 'i.scdn.co' },
+      { protocol: 'https', hostname: 'www.jiosaavn.com' },
+      { protocol: 'https', hostname: '**.jiosaavn.com' },
     ],
   },
   env: {
