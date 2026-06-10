@@ -79,7 +79,7 @@ export default function LibraryPage() {
   return (
     <div className="py-6 px-6">
       <h1 className="text-3xl font-bold mb-2">Your Library</h1>
-      <p className="text-muted text-sm mb-8">everything you've saved in one place</p>
+      <p className="text-muted text-sm mb-8">everything you&apos;ve saved in one place</p>
 
       {/* liked songs */}
       <section className="mb-10">
