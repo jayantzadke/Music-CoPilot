@@ -1,6 +1,6 @@
 import { pgTable, uuid, varchar, text, timestamp, uniqueIndex, index } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
-import { users } from './users.js'
+import { users } from './users'
 
 export const followedArtists = pgTable(
   'followed_artists',

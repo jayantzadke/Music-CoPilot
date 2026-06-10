@@ -1,11 +1,16 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
+import cookie from '@fastify/cookie'
+import jwt from '@fastify/jwt'
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 
 import { redisPlugin } from '@plugins/redis.js'
 import { rateLimitPlugin } from '@plugins/rate-limit.js'
+import { authRoutes } from '@modules/auth/auth.routes.js'
+import { usersRoutes } from '@modules/users/users.routes.js'
 import { musicRoutes } from '@modules/music/music.routes.js'
 import { searchRoutes } from '@modules/search/search.routes.js'
+import { libraryRoutes } from '@modules/library/library.routes.js'
 import { AppError } from '@errors/index.js'
 import { env } from '@config/env.js'
 
@@ -23,6 +28,12 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(cors, {
     origin: isProd ? (env.ALLOWED_ORIGINS ?? true) : true,
     credentials: true,
+  })
+
+  await app.register(cookie)
+  await app.register(jwt, {
+    secret: env.JWT_SECRET,
+    sign: { algorithm: 'HS256', expiresIn: env.JWT_EXPIRES_IN },
   })
 
   await app.register(redisPlugin)
@@ -55,8 +66,11 @@ export async function buildServer(): Promise<FastifyInstance> {
     })
   })
 
+  await app.register(authRoutes, { prefix: '/api/auth' })
+  await app.register(usersRoutes, { prefix: '/api/users' })
   await app.register(musicRoutes, { prefix: '/api/music' })
   await app.register(searchRoutes, { prefix: '/api/search' })
+  await app.register(libraryRoutes, { prefix: '/api/library' })
 
   return app
 }

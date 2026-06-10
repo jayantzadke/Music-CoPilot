@@ -1,13 +1,15 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/authStore'
 import { useLibraryStore } from '@/stores/libraryStore'
 import { apiClient } from '@/lib/api'
+import { getImageUrl } from '@/lib/utils'
 import type { Song } from '@/types'
 
 export function useLikeButton(song: Song) {
-  const user = useAuthStore((s) => s.user)
+  const user  = useAuthStore((s) => s.user)
   const { isLiked, toggleLike } = useLibraryStore()
   const [isLoading, setIsLoading] = useState(false)
 
@@ -15,30 +17,39 @@ export function useLikeButton(song: Song) {
 
   const toggle = async () => {
     if (!song?.id) return
+
     if (!user) {
-      // guest — just update localStorage
+      // guest — localStorage only
       toggleLike(song)
       return
     }
 
+    // optimistic update first so UI feels instant
+    toggleLike(song)
     setIsLoading(true)
+
     try {
       if (liked) {
         await apiClient.library.unlikeSong(song.id)
       } else {
+        const songName    = song.name ?? (song as Record<string, unknown>).title as string ?? 'Unknown'
+        const songArtists = song.primaryArtists || 
+          song.artists?.primary?.map((a: {name: string}) => a.name).join(', ') || 
+          'Unknown Artist'
         await apiClient.library.likeSong({
-          songId: song.id,
-          songName: song.name,
-          songImage: song.image?.[1]?.url ?? null,
-          songArtists: song.primaryArtists,
-          songDuration: song.duration,
-          albumId: song.album?.id ?? null,
+          songId:      song.id,
+          songName,
+          songImage:   getImageUrl(song.image, 'medium') || null,
+          songArtists,
+          songDuration: song.duration ?? 0,
+          albumId:     song.album?.id ?? null,
         })
       }
-      // keep local state in sync so the UI updates instantly
+    } catch (err) {
+      // revert optimistic update on failure
       toggleLike(song)
-    } catch {
-      // api call failed but local state was already updated — that's fine
+      const msg = err instanceof Error ? err.message : 'failed to update like'
+      toast.error(msg)
     } finally {
       setIsLoading(false)
     }

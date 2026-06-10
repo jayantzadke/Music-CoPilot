@@ -1,6 +1,6 @@
 import { pgTable, uuid, varchar, text, integer, boolean, timestamp, index } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
-import { users } from './users.js'
+import { users } from './users'
 
 // cron purges rows beyond 500 per user weekly
 export const playHistory = pgTable(

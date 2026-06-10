@@ -1,11 +1,11 @@
 import { pgTable, uuid, varchar, text, boolean, timestamp } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
-import { refreshTokens } from './refresh_tokens.js'
-import { playlists } from './playlists.js'
-import { likedSongs } from './liked_songs.js'
-import { followedArtists } from './followed_artists.js'
-import { playHistory } from './play_history.js'
-import { searchHistory } from './search_history.js'
+import { refreshTokens } from './refresh_tokens'
+import { playlists } from './playlists'
+import { likedSongs } from './liked_songs'
+import { followedArtists } from './followed_artists'
+import { playHistory } from './play_history'
+import { searchHistory } from './search_history'
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),

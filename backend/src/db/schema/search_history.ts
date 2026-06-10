@@ -1,6 +1,6 @@
 import { pgTable, uuid, varchar, timestamp, index } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
-import { users } from './users.js'
+import { users } from './users'
 
 // max 20 rows per user, service layer enforces this
 export const searchHistory = pgTable(

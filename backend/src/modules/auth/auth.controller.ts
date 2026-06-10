@@ -32,6 +32,25 @@ export async function login(req: FastifyRequest, reply: FastifyReply) {
   return reply.send({ user, accessToken })
 }
 
+export async function googleAuth(req: FastifyRequest, reply: FastifyReply) {
+  const { email, displayName, googleId, avatar } = req.body as {
+    email: string
+    displayName: string
+    googleId: string
+    avatar?: string
+  }
+  if (!email || !googleId) throw new ValidationError('email and googleId required')
+
+  const { user, accessToken, refreshToken, tokenId } = await authService.googleSignIn(req.server, {
+    email,
+    displayName,
+    googleId,
+    avatarUrl: avatar ?? null,
+  })
+  setCookies(reply, refreshToken, user.id, tokenId)
+  return reply.send({ user, accessToken })
+}
+
 export async function refresh(req: FastifyRequest, reply: FastifyReply) {
   const rawToken = req.cookies[REFRESH_TOKEN_COOKIE]
   if (!rawToken) throw new UnauthorizedError('no refresh token')
@@ -44,7 +63,6 @@ export async function refresh(req: FastifyRequest, reply: FastifyReply) {
     userIdCookie,
     rawToken,
   )
-
   setCookies(reply, refreshToken, userIdCookie, tokenId)
   return reply.send({ accessToken })
 }

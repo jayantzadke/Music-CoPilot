@@ -4,7 +4,7 @@ import { TrackList } from '@/components/music/TrackList'
 import { AlbumCard } from '@/components/music/AlbumCard'
 import type { Artist, Album, Song } from '@/types'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
+const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3002'
 
 async function getArtistData(id: string) {
   try {

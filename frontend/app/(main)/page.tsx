@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { HomeSection } from '@/components/home/HomeSection'
+import { useAuthStore } from '@/stores/authStore'
+import type { ContentType } from '@/types'
 
 const LANGUAGES = ['hindi', 'english', 'tamil', 'telugu', 'punjabi'] as const
 
@@ -11,11 +13,19 @@ interface Module {
   data: unknown[]
 }
 
+function getGreeting() {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Good morning'
+  if (hour < 17) return 'Good afternoon'
+  return 'Good evening'
+}
+
 export default function HomePage() {
-  const [lang, setLang] = useState('hindi')
+  const [lang, setLang]       = useState('hindi')
   const [modules, setModules] = useState<Module[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState(false)
+  const [error, setError]     = useState(false)
+  const user = useAuthStore((s) => s.user)
 
   useEffect(() => {
     setIsLoading(true)
@@ -23,16 +33,30 @@ export default function HomePage() {
 
     fetch(`/api/music/modules?languages=${lang}`)
       .then((r) => r.json())
-      .then((data) => {
-        const sections = extractSections(data)
-        setModules(sections)
-      })
+      .then((data) => setModules(extractSections(data)))
       .catch(() => setError(true))
       .finally(() => setIsLoading(false))
   }, [lang])
 
   return (
     <div className="py-6">
+      {/* welcome header */}
+      <div className="px-6 mb-6">
+        {user ? (
+          <div>
+            <h1 className="text-2xl font-bold text-white">
+              {getGreeting()}, {user.displayName} 👋
+            </h1>
+            <p className="text-muted text-sm mt-1">what are we listening to today?</p>
+          </div>
+        ) : (
+          <div>
+            <h1 className="text-2xl font-bold text-white">{getGreeting()}</h1>
+            <p className="text-muted text-sm mt-1">discover music you love</p>
+          </div>
+        )}
+      </div>
+
       {/* language filter */}
       <div className="flex gap-2 px-6 mb-6 flex-wrap">
         {LANGUAGES.map((l) => (
@@ -42,7 +66,7 @@ export default function HomePage() {
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors capitalize ${
               lang === l
                 ? 'bg-white text-black'
-                : 'bg-surface-hover text-muted hover:text-white'
+                : 'bg-elevated text-muted hover:text-white'
             }`}
           >
             {l}
@@ -51,52 +75,43 @@ export default function HomePage() {
       </div>
 
       {error && (
-        <div className="px-6">
+        <div className="px-6 py-4">
           <p className="text-muted text-sm">couldn&apos;t load content right now — try again in a moment</p>
         </div>
       )}
 
-      {modules.map((section, i) => (
-        <HomeSection
-          key={`${section.title}-${i}`}
-          title={section.title}
-          type={section.type as ContentType}
-          items={section.data as never[]}
-          isLoading={isLoading}
-        />
-      ))}
-
-      {isLoading && !error && (
-        // skeleton placeholders while loading
+      {isLoading && !error ? (
         <div className="space-y-8">
           {[1, 2, 3].map((i) => (
-            <HomeSection
-              key={i}
-              title=""
-              type="song"
-              items={[]}
-              isLoading
-            />
+            <HomeSection key={i} title="" type="song" items={[]} isLoading />
           ))}
         </div>
+      ) : (
+        modules.map((section, i) => (
+          <HomeSection
+            key={`${section.title}-${i}`}
+            title={section.title}
+            type={section.type as ContentType}
+            items={section.data as never[]}
+            isLoading={false}
+          />
+        ))
       )}
     </div>
   )
 }
 
-// maps backend response to displayable sections
 function extractSections(data: unknown): Module[] {
   if (!data || typeof data !== 'object') return []
   const d = data as Record<string, unknown>
 
-  const sections: Module[] = []
-
   const sectionMap: Array<{ key: string; title: string; type: string; subKey?: string }> = [
-    { key: 'trending', title: 'Trending Songs', type: 'song', subKey: 'songs' },
-    { key: 'newReleases', title: 'New Releases', type: 'album', subKey: 'albums' },
-    { key: 'topArtists', title: 'Top Artists', type: 'artist', subKey: 'artists' },
+    { key: 'trending',    title: 'Trending Songs', type: 'song',   subKey: 'songs'   },
+    { key: 'newReleases', title: 'New Releases',   type: 'album',  subKey: 'albums'  },
+    { key: 'topArtists',  title: 'Top Artists',    type: 'artist', subKey: 'artists' },
   ]
 
+  const sections: Module[] = []
   for (const { key, title, type, subKey } of sectionMap) {
     const section = d[key] as Record<string, unknown> | undefined
     if (!section) continue
@@ -105,6 +120,5 @@ function extractSections(data: unknown): Module[] {
       sections.push({ title, type, data: items })
     }
   }
-
   return sections
 }

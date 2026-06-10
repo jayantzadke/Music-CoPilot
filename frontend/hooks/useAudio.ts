@@ -6,12 +6,21 @@ import { getFallbackUrls } from '@/lib/utils'
 import { useMediaSession } from './useMediaSession'
 import { toast } from 'sonner'
 
-const QUALITY_FALLBACK_ORDER = ['320kbps', '160kbps', '96kbps', '48kbps', '12kbps'] as const
+// module-level singleton — survives route changes, never creates a second audio element
+let globalAudio: HTMLAudioElement | null = null
+
+function getAudio(): HTMLAudioElement {
+  if (!globalAudio) {
+    globalAudio = new Audio()
+    globalAudio.preload = 'metadata'
+  }
+  return globalAudio
+}
 
 export function useAudio() {
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const urlIndexRef = useRef(0)
+  const urlIndexRef    = useRef(0)
   const fallbackUrlsRef = useRef<string[]>([])
+  const mountedRef     = useRef(false)
 
   const {
     currentSong,
@@ -28,38 +37,28 @@ export function useAudio() {
 
   useMediaSession()
 
-  // create audio element once
+  // wire events once per mount — if already wired by a previous mount, skip
   useEffect(() => {
-    audioRef.current = new Audio()
-    audioRef.current.preload = 'metadata'
+    if (mountedRef.current) return
+    mountedRef.current = true
 
-    return () => {
-      audioRef.current?.pause()
-      audioRef.current = null
-    }
-  }, [])
+    const audio = getAudio()
 
-  // wire up audio events
-  useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
-
-    const onTimeUpdate = () => setCurrentTime(audio.currentTime)
-    const onDurationChange = () => setDuration(audio.duration || 0)
-    const onWaiting = () => setIsLoading(true)
-    const onCanPlay = () => setIsLoading(false)
-    const onEnded = () => next()
+    const onTimeUpdate     = () => usePlayerStore.getState().setCurrentTime(audio.currentTime)
+    const onDurationChange = () => usePlayerStore.getState().setDuration(audio.duration || 0)
+    const onWaiting        = () => usePlayerStore.getState().setIsLoading(true)
+    const onCanPlay        = () => usePlayerStore.getState().setIsLoading(false)
+    const onEnded          = () => usePlayerStore.getState().next()
 
     const onError = () => {
-      // try next quality fallback
       urlIndexRef.current += 1
       const nextUrl = fallbackUrlsRef.current[urlIndexRef.current]
       if (nextUrl) {
         audio.src = nextUrl
         audio.play().catch(() => null)
       } else {
-        toast.error(`couldn't load this track, skipping`)
-        next()
+        toast.error("couldn't load this track, skipping")
+        usePlayerStore.getState().next()
       }
     }
 
@@ -70,20 +69,13 @@ export function useAudio() {
     audio.addEventListener('ended', onEnded)
     audio.addEventListener('error', onError)
 
-    return () => {
-      audio.removeEventListener('timeupdate', onTimeUpdate)
-      audio.removeEventListener('durationchange', onDurationChange)
-      audio.removeEventListener('waiting', onWaiting)
-      audio.removeEventListener('canplay', onCanPlay)
-      audio.removeEventListener('ended', onEnded)
-      audio.removeEventListener('error', onError)
-    }
-  }, [setCurrentTime, setDuration, setIsLoading, next])
+    // no cleanup — we want these listeners to persist for the lifetime of the app
+  }, [])
 
-  // handle song changes
+  // song change — load new src
   useEffect(() => {
-    const audio = audioRef.current
-    if (!audio || !currentSong) return
+    const audio = getAudio()
+    if (!currentSong) return
 
     const urls = getFallbackUrls(currentSong.downloadUrl, quality)
     fallbackUrlsRef.current = urls
@@ -91,33 +83,35 @@ export function useAudio() {
 
     const firstUrl = urls[0]
     if (!firstUrl) {
-      toast.error(`no stream url for this track`)
+      toast.error('no stream url for this track')
       next()
       return
     }
 
+    // stop whatever is playing before loading new track
+    audio.pause()
     audio.src = firstUrl
+
     if (isPlaying) {
       audio.play().catch(() => null)
     }
-  }, [currentSong?.id]) // only re-run when song actually changes
+  }, [currentSong?.id])
 
-  // handle play/pause
+  // play/pause
   useEffect(() => {
-    const audio = audioRef.current
-    if (!audio || !currentSong) return
-
+    const audio = getAudio()
+    if (!currentSong) return
     if (isPlaying) {
       audio.play().catch(() => null)
     } else {
       audio.pause()
     }
-  }, [isPlaying, currentSong])
+  }, [isPlaying])
 
-  // handle seek
+  // seek
   useEffect(() => {
-    const audio = audioRef.current
-    if (!audio || !audio.duration) return
+    const audio = getAudio()
+    if (!audio.duration) return
     const targetTime = progress * audio.duration
     if (Math.abs(audio.currentTime - targetTime) > 1) {
       audio.currentTime = targetTime
@@ -126,10 +120,7 @@ export function useAudio() {
 
   // volume
   useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
+    const audio = getAudio()
     audio.volume = isMuted ? 0 : volume
   }, [volume, isMuted])
-
-  return { audioRef }
 }

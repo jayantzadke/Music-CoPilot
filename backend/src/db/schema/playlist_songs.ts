@@ -1,7 +1,7 @@
 import { pgTable, uuid, varchar, text, integer, timestamp, uniqueIndex, index } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
-import { playlists } from './playlists.js'
-import { users } from './users.js'
+import { playlists } from './playlists'
+import { users } from './users'
 
 export const playlistSongs = pgTable(
   'playlist_songs',

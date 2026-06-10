@@ -3,15 +3,16 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Music } from 'lucide-react'
+import { Music, Eye, EyeOff } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 
 export default function LoginPage() {
   const router = useRouter()
   const { login, isLoading } = useAuthStore()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [email, setEmail]         = useState('')
+  const [password, setPassword]   = useState('')
+  const [showPwd, setShowPwd]     = useState(false)
+  const [error, setError]         = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,16 +26,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+    <div className="min-h-screen bg-bg flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="flex justify-center mb-8">
           <div className="flex items-center gap-2">
             <Music className="text-accent" size={32} />
-            <span className="text-2xl font-bold">Music-Pilot</span>
+            <span className="text-2xl font-bold">Music-CoPilot</span>
           </div>
         </div>
 
-        <h1 className="text-3xl font-bold text-center mb-8">Log in</h1>
+        <h1 className="text-3xl font-bold text-center mb-2">Welcome back</h1>
+        <p className="text-center text-sm text-muted mb-8">Log in to continue listening</p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
@@ -45,39 +47,54 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="px-4 py-3 rounded bg-[#2a2a2a] text-white border border-border focus:border-white outline-none text-sm"
-              placeholder="Email address"
+              autoFocus
+              className="px-4 py-3 rounded-lg bg-elevated text-white border border-border focus:border-white outline-none text-sm transition-colors"
+              placeholder="you@example.com"
             />
           </div>
 
           <div className="flex flex-col gap-1">
             <label htmlFor="password" className="text-sm font-semibold">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="px-4 py-3 rounded bg-[#2a2a2a] text-white border border-border focus:border-white outline-none text-sm"
-              placeholder="Password"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                type={showPwd ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-4 py-3 pr-12 rounded-lg bg-elevated text-white border border-border focus:border-white outline-none text-sm transition-colors"
+                placeholder="Your password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPwd(!showPwd)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors"
+                aria-label={showPwd ? 'Hide password' : 'Show password'}
+              >
+                {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </div>
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && (
+            <div className="px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20">
+              <p className="text-red-400 text-sm">{error}</p>
+            </div>
+          )}
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 rounded-full bg-accent text-black font-bold text-sm hover:bg-accent-hover transition-colors disabled:opacity-50"
+            className="w-full py-3 rounded-full bg-accent text-black font-bold text-sm hover:bg-accent-hover transition-colors disabled:opacity-50 mt-2"
           >
             {isLoading ? 'Logging in...' : 'Log in'}
           </button>
         </form>
 
         <p className="text-center text-sm text-muted mt-8">
-          Don&apos;t have an account?{' '}
-          <Link href="/register" className="text-white hover:text-accent underline">
-            Sign up
+          New here?{' '}
+          <Link href="/register" className="text-white hover:text-accent underline transition-colors">
+            Create an account
           </Link>
         </p>
       </div>
