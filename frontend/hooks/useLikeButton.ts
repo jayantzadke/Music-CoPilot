@@ -32,14 +32,14 @@ export function useLikeButton(song: Song) {
       if (liked) {
         await apiClient.library.unlikeSong(song.id)
       } else {
-        const songName    = song.name ?? (song as Record<string, unknown>).title as string ?? 'Unknown'
+        const songName    = song.name ?? (song as unknown as Record<string, unknown>).title as string ?? 'Unknown'
         const songArtists = song.primaryArtists || 
           song.artists?.primary?.map((a: {name: string}) => a.name).join(', ') || 
           'Unknown Artist'
         await apiClient.library.likeSong({
           songId:      song.id,
           songName,
-          songImage:   getImageUrl(song.image, 'medium') || null,
+          songImage:   getImageUrl(song.image, '150x150') || null,
           songArtists,
           songDuration: song.duration ?? 0,
           albumId:     song.album?.id ?? null,
