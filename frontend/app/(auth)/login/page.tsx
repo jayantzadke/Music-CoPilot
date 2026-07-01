@@ -6,17 +6,26 @@ import { useRouter } from 'next/navigation'
 import { Music, Eye, EyeOff } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 
+const ACCESS_CODE = process.env.NEXT_PUBLIC_ACCESS_CODE ?? 'MUSIC9098'
+
 export default function LoginPage() {
   const router = useRouter()
   const { login, isLoading } = useAuthStore()
-  const [email, setEmail]         = useState('')
-  const [password, setPassword]   = useState('')
-  const [showPwd, setShowPwd]     = useState(false)
-  const [error, setError]         = useState('')
+  const [accessCode, setAccessCode] = useState('')
+  const [email, setEmail]           = useState('')
+  const [password, setPassword]     = useState('')
+  const [showPwd, setShowPwd]       = useState(false)
+  const [error, setError]           = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    if (accessCode.trim().toUpperCase() !== ACCESS_CODE.toUpperCase()) {
+      setError('invalid access code')
+      return
+    }
+
     try {
       await login(email, password)
       router.push('/')
@@ -40,6 +49,20 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
+            <label htmlFor="accessCode" className="text-sm font-semibold">Access Code</label>
+            <input
+              id="accessCode"
+              type="text"
+              value={accessCode}
+              onChange={(e) => setAccessCode(e.target.value)}
+              required
+              autoFocus
+              className="px-4 py-3 rounded-lg bg-elevated text-white border border-border focus:border-accent outline-none text-sm transition-colors tracking-widest uppercase"
+              placeholder="Enter access code"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
             <label htmlFor="email" className="text-sm font-semibold">Email address</label>
             <input
               id="email"
@@ -47,7 +70,6 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              autoFocus
               className="px-4 py-3 rounded-lg bg-elevated text-white border border-border focus:border-white outline-none text-sm transition-colors"
               placeholder="you@example.com"
             />

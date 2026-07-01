@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import { Music, Check, X, Eye, EyeOff } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 
+const ACCESS_CODE = process.env.NEXT_PUBLIC_ACCESS_CODE ?? 'MUSIC9098'
+
 function PasswordRule({ met, label }: { met: boolean; label: string }) {
   return (
     <div className="flex items-center gap-2 text-xs">
@@ -27,6 +29,7 @@ function validatePassword(p: string) {
 export default function RegisterPage() {
   const router = useRouter()
   const { register, isLoading } = useAuthStore()
+  const [accessCode, setAccessCode] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail]             = useState('')
   const [password, setPassword]       = useState('')
@@ -40,10 +43,17 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    if (accessCode.trim().toUpperCase() !== ACCESS_CODE.toUpperCase()) {
+      setError('invalid access code')
+      return
+    }
+
     if (!allRulesMet) {
       setError('password does not meet all requirements')
       return
     }
+
     try {
       await register(email, password, displayName)
       router.push('/')
@@ -67,16 +77,29 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <label htmlFor="name" className="text-sm font-semibold">What should we call you?</label>
+            <label htmlFor="accessCode" className="text-sm font-semibold">Access Code</label>
+            <input
+              id="accessCode"
+              type="text"
+              value={accessCode}
+              onChange={(e) => setAccessCode(e.target.value)}
+              required
+              autoFocus
+              className="px-4 py-3 rounded-lg bg-elevated text-white border border-border focus:border-accent outline-none text-sm transition-colors tracking-widest uppercase"
+              placeholder="Enter access code"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label htmlFor="name" className="text-sm font-semibold">Display name</label>
             <input
               id="name"
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               required
-              autoFocus
               className="px-4 py-3 rounded-lg bg-elevated text-white border border-border focus:border-white outline-none text-sm transition-colors"
-              placeholder="Your name"
+              placeholder="What should we call you?"
             />
           </div>
 
