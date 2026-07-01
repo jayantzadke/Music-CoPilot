@@ -36,7 +36,7 @@ const handler = NextAuth({
   callbacks: {
     async jwt({ token, user, account }) {
       if (user) {
-        token.accessToken = (user as Record<string, unknown>).accessToken as string
+        token.accessToken = (user as unknown as Record<string, unknown>).accessToken as string
         token.userId = user.id
       }
       // for google oauth, register/login on our backend
