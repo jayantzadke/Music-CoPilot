@@ -28,7 +28,7 @@ export function AlbumCard({ album }: AlbumCardProps) {
       <div className="min-w-0">
         <p className="text-sm font-medium text-white truncate">{album.name}</p>
         <p className="text-xs text-muted truncate">
-          {year} · {album.artists?.primary?.[0]?.name ?? (album as Record<string, unknown>).artist as string ?? 'Various Artists'}
+          {year} · {album.artists?.primary?.[0]?.name ?? (album as unknown as Record<string, unknown>).artist as string ?? 'Various Artists'}
         </p>
       </div>
     </Link>
