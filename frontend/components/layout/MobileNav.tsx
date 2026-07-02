@@ -1,19 +1,21 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Home, Search, Heart } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { Home, Search, Heart, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/authStore'
 
 export function MobileNav() {
   const pathname = usePathname()
-  const user = useAuthStore((s) => s.user)
+  const router = useRouter()
+  const { user, logout } = useAuthStore()
 
   const links = [
-    { href: '/', label: 'Home', icon: Home },
-    { href: '/search', label: 'Search', icon: Search },
-    ...(user ? [{ href: '/library', label: 'Liked', icon: Heart }] : []),
+    { href: '/',        label: 'Home',    icon: Home   },
+    { href: '/search',  label: 'Search',  icon: Search },
+    { href: '/library', label: 'Liked',   icon: Heart  },
+    { href: '/profile', label: 'Profile', icon: User   },
   ]
 
   return (
@@ -23,7 +25,7 @@ export function MobileNav() {
           key={href}
           href={href}
           className={cn(
-            'flex flex-col items-center gap-0.5 py-2 px-4 transition-colors',
+            'flex flex-col items-center gap-0.5 py-2 px-3 transition-colors',
             pathname === href ? 'text-accent' : 'text-muted',
           )}
         >
