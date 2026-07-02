@@ -41,29 +41,29 @@ export default function HomePage() {
   return (
     <div className="py-6">
       {/* welcome header */}
-      <div className="px-6 mb-6">
+      <div className="px-4 md:px-6 mb-6">
         {user ? (
           <div>
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-xl md:text-2xl font-bold text-white">
               {getGreeting()}, {user.displayName} 👋
             </h1>
             <p className="text-muted text-sm mt-1">what are we listening to today?</p>
           </div>
         ) : (
           <div>
-            <h1 className="text-2xl font-bold text-white">{getGreeting()}</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-white">{getGreeting()}</h1>
             <p className="text-muted text-sm mt-1">discover music you love</p>
           </div>
         )}
       </div>
 
       {/* language filter */}
-      <div className="flex gap-2 px-6 mb-6 flex-wrap">
+      <div className="flex gap-2 px-4 md:px-6 mb-6 overflow-x-auto scrollbar-none flex-nowrap md:flex-wrap">
         {LANGUAGES.map((l) => (
           <button
             key={l}
             onClick={() => setLang(l)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors capitalize ${
+            className={`px-3 md:px-4 py-1.5 rounded-full text-sm font-medium transition-colors capitalize shrink-0 ${
               lang === l
                 ? 'bg-white text-black'
                 : 'bg-elevated text-muted hover:text-white'

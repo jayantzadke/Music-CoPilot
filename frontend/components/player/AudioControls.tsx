@@ -12,11 +12,11 @@ export function AudioControls() {
 
   return (
     <div className="flex flex-col items-center gap-1 flex-1">
-      <div className="flex items-center gap-4">
-        {/* shuffle */}
+      <div className="flex items-center gap-3 md:gap-4">
+        {/* shuffle — hidden on mobile */}
         <button
           onClick={toggleShuffle}
-          className={cn('transition-colors', shuffle ? 'text-accent' : 'text-muted hover:text-white')}
+          className={cn('hidden md:block transition-colors', shuffle ? 'text-accent' : 'text-muted hover:text-white')}
           aria-label="Shuffle"
         >
           <Shuffle size={18} />
@@ -55,10 +55,10 @@ export function AudioControls() {
           <SkipForward size={20} fill="currentColor" />
         </button>
 
-        {/* repeat */}
+        {/* repeat — hidden on mobile */}
         <button
           onClick={cycleRepeat}
-          className={cn('transition-colors relative', repeat !== 'none' ? 'text-accent' : 'text-muted hover:text-white')}
+          className={cn('hidden md:block transition-colors relative', repeat !== 'none' ? 'text-accent' : 'text-muted hover:text-white')}
           aria-label="Repeat"
         >
           {repeat === 'one' ? <Repeat1 size={18} /> : <Repeat size={18} />}

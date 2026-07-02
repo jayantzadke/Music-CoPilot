@@ -17,7 +17,7 @@ export function SongInfo() {
   const isLongName = currentSong.name.length > 30
 
   return (
-    <div className="flex items-center gap-3 w-[30%] min-w-0">
+    <div className="flex items-center gap-2 md:gap-3 w-[35%] md:w-[30%] min-w-0">
       <div className="relative shrink-0 w-14 h-14 rounded overflow-hidden">
         <Image src={imgUrl} alt={currentSong.name} fill sizes="56px" className="object-cover" />
       </div>
